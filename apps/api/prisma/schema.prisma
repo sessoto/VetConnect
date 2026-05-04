@@ -1,0 +1,187 @@
+// VetConnect — Prisma schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  vet
+  assistant
+}
+
+enum TriageLevel {
+  red
+  yellow
+  green
+}
+
+enum CareTaskType {
+  medication
+  feeding
+  hygiene
+  control
+  other
+}
+
+enum Recurrence {
+  none
+  every_n_hours
+  daily
+}
+
+enum CareTaskStatus {
+  pending
+  done
+  skipped
+}
+
+enum PatientStatus {
+  active
+  discharged
+}
+
+model Clinic {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  users     User[]
+  patients  Patient[]
+  audits    AuditLog[]
+}
+
+model User {
+  id             String        @id @default(cuid())
+  clinicId       String
+  clinic         Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  email          String
+  passwordHash   String
+  name           String
+  role           Role
+  expoPushToken  String?
+  failedLogins   Int           @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime      @default(now())
+
+  refreshTokens  RefreshToken[]
+  triageEntries  TriageEntry[] @relation("TriageCreator")
+  careTasksAssigned CareTask[] @relation("CareTaskAssignee")
+  careTasksCreated  CareTask[] @relation("CareTaskCreator")
+  careTasksCompleted CareTask[] @relation("CareTaskCompleter")
+  notes          Note[]        @relation("NoteAuthor")
+  audits         AuditLog[]
+
+  @@unique([clinicId, email])
+  @@index([clinicId])
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Patient {
+  id              String         @id @default(cuid())
+  clinicId        String
+  clinic          Clinic         @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  name            String
+  species         String
+  breed           String?
+  ownerName       String
+  ownerContact    String
+  reasonForVisit  String
+  status          PatientStatus  @default(active)
+  admittedAt      DateTime       @default(now())
+  dischargedAt    DateTime?
+  deletedAt       DateTime?
+
+  triageEntries   TriageEntry[]
+  careTasks       CareTask[]
+  notes           Note[]
+
+  @@index([clinicId, status])
+}
+
+model TriageEntry {
+  id          String      @id @default(cuid())
+  patientId   String
+  patient     Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  level       TriageLevel
+  reason      String
+  createdById String
+  createdBy   User        @relation("TriageCreator", fields: [createdById], references: [id])
+  createdAt   DateTime    @default(now())
+
+  @@index([patientId, createdAt])
+}
+
+model CareTask {
+  id              String         @id @default(cuid())
+  patientId       String
+  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  type            CareTaskType
+  title           String
+  details         String?
+  dosage          String?
+  scheduledAt     DateTime
+  recurrence      Recurrence     @default(none)
+  recurrenceN     Int?
+  assignedToId    String?
+  assignedTo      User?          @relation("CareTaskAssignee", fields: [assignedToId], references: [id])
+  status          CareTaskStatus @default(pending)
+  notifiedAt      DateTime?
+  completedById   String?
+  completedBy     User?          @relation("CareTaskCompleter", fields: [completedById], references: [id])
+  completedAt     DateTime?
+  completionNotes String?
+  createdById     String
+  createdBy       User           @relation("CareTaskCreator", fields: [createdById], references: [id])
+  createdAt       DateTime       @default(now())
+  deletedAt       DateTime?
+
+  @@index([patientId, status])
+  @@index([status, scheduledAt])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation("NoteAuthor", fields: [authorId], references: [id])
+  body      String
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  @@index([patientId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  payload   Json?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([clinicId, createdAt])
+  @@index([entity, entityId])
+}

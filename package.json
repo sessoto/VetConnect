@@ -1,0 +1,20 @@
+{
+  "name": "vetconnect",
+  "private": true,
+  "version": "0.0.1",
+  "description": "VetConnect — app móvil que conecta clínicas veterinarias con su staff",
+  "scripts": {
+    "dev:api": "pnpm --filter @vetconnect/api dev",
+    "dev:mobile": "pnpm --filter @vetconnect/mobile start",
+    "db:migrate": "pnpm --filter @vetconnect/api db:migrate",
+    "db:seed": "pnpm --filter @vetconnect/api db:seed",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "build": "pnpm -r build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.33.0"
+}
