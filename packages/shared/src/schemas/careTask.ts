@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CARE_TASK_TYPES, RECURRENCES } from '../constants.js';
+import { CARE_TASK_TYPES, RECURRENCES } from '../constants';
 
 export const createCareTaskSchema = z
   .object({

@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { ROLES } from '../constants.js';
-import { passwordSchema } from './auth.js';
+import { ROLES } from '../constants';
+import { passwordSchema } from './auth';
 
 export const createUserSchema = z.object({
   name: z.string().min(2).max(120),

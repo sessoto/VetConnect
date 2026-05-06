@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PATIENT_STATUSES } from '../constants.js';
+import { PATIENT_STATUSES } from '../constants';
 
 export const createPatientSchema = z.object({
   name: z.string().min(1).max(120),

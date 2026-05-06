@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TRIAGE_LEVELS } from '../constants.js';
+import { TRIAGE_LEVELS } from '../constants';
 
 export const createTriageSchema = z.object({
   level: z.enum(TRIAGE_LEVELS),

@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "scheme": "vetconnect",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vetconnect.app"

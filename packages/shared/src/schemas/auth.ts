@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ROLES } from '../constants.js';
+import { ROLES } from '../constants';
 
 export const passwordSchema = z
   .string()
